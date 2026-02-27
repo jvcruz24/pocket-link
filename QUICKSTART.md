@@ -43,26 +43,33 @@ pnpm install
 pnpm list           # Shows installed packages
 ```
 
+### Database Setup (PostgreSQL)
+
+```bash
+# 1. Create PostgreSQL database
+createdb pocket_link
+
+# 2. Set DATABASE_URL environment variable (in .env.local)
+# DATABASE_URL="postgresql://user:password@localhost:5432/pocket_link"
+
+# 3. Run Prisma migrations
+npx prisma migrate dev --name init
+
+# 4. (Optional) Open Prisma Studio to view database
+npx prisma studio
+```
+
 ### Environment Variables
 
 Create `.env.local` file:
 
 ```bash
 # .env.local
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/pocket_link
-
-# Redis (Cache)
-REDIS_URL=redis://localhost:6379
+# Database (Required for Prisma)
+DATABASE_URL="postgresql://user:password@localhost:5432/pocket_link"
 
 # API Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Analytics (Optional)
-ANALYTICS_API_KEY=your_analytics_key
-
-# Email (For notifications)
-SENDGRID_API_KEY=your_sendgrid_key
 ```
 
 ---
@@ -77,29 +84,31 @@ pocket-link/
 │   ├── layout.tsx                # Root layout wrapper
 │   ├── globals.css               # Global styles
 │   │
-│   ├── api/                      # API routes (to be created)
+│   ├── api/                      # API routes
 │   │   ├── shorten/
-│   │   │   └── route.ts          # POST /api/shorten
+│   │   │   └── route.ts          # POST /api/shorten (Prisma integrated)
 │   │   │
 │   │   └── [shortCode]/
-│   │       └── route.ts          # GET /[shortCode]
+│   │       └── route.ts          # GET /[shortCode] (Prisma integrated)
+│   │
+│   ├── generated/
+│   │   └── prisma/               # Auto-generated Prisma types
+│   │       ├── client.ts
+│   │       ├── index.d.ts
+│   │       └── ...
 │   │
 │   └── form/                     # Example form page
 │       └── page.tsx              # Reference implementation
 │
-├── src/                          # (Optional - for utilities)
-│   ├── lib/
-│   │   ├── db.ts                 # Database client
-│   │   ├── cache.ts              # Redis client
-│   │   ├── validation.ts         # Zod schemas
-│   │   └── utils.ts              # Helper functions
-│   │
-│   ├── services/
-│   │   ├── url-shortening.ts     # URL shortening logic
-│   │   └── analytics.ts          # Analytics service
-│   │
-│   └── types/
-│       └── index.ts              # TypeScript types
+├── lib/
+│   └── prisma.ts                 # Prisma client singleton
+│
+├── prisma/                       # Prisma configuration
+│   ├── schema.prisma             # Database schema (models)
+│   └── migrations/               # Migration history
+│       ├── migration_lock.toml
+│       └── [timestamp]_init/
+│           └── migration.sql
 │
 ├── public/                       # Static files
 │   └── favicon.ico
@@ -111,6 +120,7 @@ pocket-link/
 ├── tailwind.config.js            # Tailwind CSS config
 ├── postcss.config.mjs            # PostCSS config
 ├── eslint.config.mjs             # ESLint rules
+├── prisma.config.ts              # Prisma configuration
 ├── README.md                     # Project overview
 ├── TECHNICAL_GUIDE.md            # Implementation details
 └── ARCHITECTURE.md               # System design
@@ -200,19 +210,19 @@ export async function POST(request: NextRequest) {
         shortUrl: `${process.env.NEXT_PUBLIC_APP_URL}/${shortCode}`,
         longUrl: data.url,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -243,7 +253,8 @@ export class UrlShorteningService {
    * Encode buffer to base62
    */
   private static encodeBase62(buffer: Buffer): string {
-    const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const chars =
+      '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let result = '';
     let num = 0n;
 
@@ -412,7 +423,10 @@ describe('UrlShorteningService', () => {
 ```typescript
 const shortenSchema = z.object({
   url: z.string().url(),
-  custom: z.string().regex(/^[a-z0-9-]{3,20}$/).optional(),
+  custom: z
+    .string()
+    .regex(/^[a-z0-9-]{3,20}$/)
+    .optional(),
 });
 ```
 
@@ -584,20 +598,24 @@ pnpm dev 2>&1 | grep "error"
 ## Dependencies Overview
 
 ### Core Framework
+
 - **next**: React framework with built-in routing
 - **react**: UI library
 - **react-dom**: React DOM rendering
 
 ### Forms & Validation
+
 - **react-hook-form**: Efficient form state management
 - **@hookform/resolvers**: Zod resolver for hook form
 - **zod**: Schema validation library
 
 ### Styling
+
 - **tailwindcss**: Utility-first CSS framework
 - **@tailwindcss/postcss**: PostCSS plugin
 
 ### Development
+
 - **typescript**: Static type checking
 - **eslint**: Code linting
 - **postcss**: CSS processing

@@ -4,13 +4,168 @@ This guide provides in-depth technical details for implementing URL shortening i
 
 ## Table of Contents
 
-1. [Short Code Generation Algorithms](#short-code-generation-algorithms)
-2. [Hash Functions for URL Shortening](#hash-functions-for-url-shortening)
-3. [Database Optimization](#database-optimization)
-4. [Collision Handling Strategies](#collision-handling-strategies)
-5. [Code Examples](#code-examples)
-6. [Performance Considerations](#performance-considerations)
-7. [Security Implications](#security-implications)
+1. [Prisma Integration](#prisma-integration)
+2. [Short Code Generation Algorithms](#short-code-generation-algorithms)
+3. [Hash Functions for URL Shortening](#hash-functions-for-url-shortening)
+4. [Database Optimization](#database-optimization)
+5. [Collision Handling Strategies](#collision-handling-strategies)
+6. [Code Examples](#code-examples)
+7. [Performance Considerations](#performance-considerations)
+8. [Security Implications](#security-implications)
+
+---
+
+## Prisma Integration
+
+### Overview
+
+Prisma is a modern ORM (Object-Relational Mapping) that provides type-safe database access with automatic migrations. In this project, Prisma manages the URL shortening data model and handles all database operations.
+
+### Database Schema (Prisma)
+
+```prisma
+model Urls {
+  id        BigInt     @id @default(autoincrement())
+  short_code String    @unique
+  long_url  String
+  created_at DateTime  @default(now())
+  expires_at DateTime?
+  is_active Boolean   @default(true)
+
+  @@index([short_code], name: "idx_short_code")
+  @@index([created_at], name: "idx_created_at")
+}
+```
+
+### Prisma Client Singleton (lib/prisma.ts)
+
+To avoid creating multiple Prisma client instances (especially important in development):
+
+```typescript
+import { PrismaClient } from '@prisma/client';
+
+declare global {
+  var __prisma?: PrismaClient;
+}
+
+const prisma = global.__prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') global.__prisma = prisma;
+
+export default prisma;
+```
+
+### API Route Implementation with Prisma
+
+#### POST /api/shorten
+
+```typescript
+import prisma from '@/lib/prisma';
+import { z } from 'zod';
+
+const urlSchema = z.object({
+  url: z.url('Invalid URL format'),
+});
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { url } = urlSchema.parse(body);
+
+    // Check if URL already exists (for idempotency)
+    const existing = await prisma.urls.findFirst({
+      where: { long_url: url },
+    });
+
+    if (existing) {
+      return new Response(JSON.stringify(existing), { status: 200 });
+    }
+
+    // Create new shortened URL
+    const newUrl = await prisma.urls.create({
+      data: {
+        long_url: url,
+        short_code: (await prisma.urls.count()).toString(), // Sequential ID
+      },
+    });
+
+    return new Response(JSON.stringify(newUrl), { status: 201 });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Invalid request' }), {
+      status: 400,
+    });
+  }
+}
+```
+
+#### GET /[shortCode]
+
+```typescript
+import prisma from '@/lib/prisma';
+
+export async function GET(
+  request: Request,
+  { params }: { params: { shortCode: string } },
+) {
+  try {
+    const url = await prisma.urls.findUnique({
+      where: { short_code: params.shortCode },
+    });
+
+    if (!url || !url.is_active) {
+      return new Response('Not found', { status: 404 });
+    }
+
+    // Check expiration
+    if (url.expires_at && new Date() > url.expires_at) {
+      return new Response('Link expired', { status: 410 });
+    }
+
+    return new Response(null, {
+      status: 301,
+      headers: { Location: url.long_url },
+    });
+  } catch (error) {
+    return new Response('Server error', { status: 500 });
+  }
+}
+```
+
+### Prisma Commands
+
+```bash
+# Initialize Prisma
+npx prisma init
+
+# Create and apply migrations
+npx prisma migrate dev --name init
+
+# Check migration status
+npx prisma migrate status
+
+# Reset database (development only)
+npx prisma migrate reset
+
+# Generate Prisma client
+npx prisma generate
+
+# Open Prisma Studio (visual database viewer)
+npx prisma studio
+```
+
+### Type Safety with Prisma
+
+Prisma automatically generates TypeScript types from your schema:
+
+```typescript
+import { Urls } from '@prisma/client';
+
+const url: Urls = await prisma.urls.findUnique({
+  where: { short_code: 'abc123' },
+});
+```
+
+All database operations are fully type-safe, preventing runtime errors and improving IDE autocompletion.
 
 ---
 

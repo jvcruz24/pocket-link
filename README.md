@@ -11,8 +11,9 @@ A modern Next.js application for creating shortened URLs with a clean, intuitive
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [How It Works](#how-it-works)
-- [API Design (Planned)](#api-design-planned)
-- [Database Schema (Planned)](#database-schema-planned)
+- [Tech Stack](#tech-stack)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
 
 ---
 
@@ -25,8 +26,10 @@ A modern Next.js application for creating shortened URLs with a clean, intuitive
 - ✅ Responsive design with Tailwind CSS
 - ✅ Dark mode support
 - ✅ Type-safe TypeScript implementation
+- ✅ Prisma ORM for database management
+- ✅ PostgreSQL database with optimized indexing
 
-Current Status: **Frontend Implementation** (Backend API ready for integration)
+Current Status: **Full Stack Implementation** (Frontend + Backend API + Database)
 
 ---
 
@@ -61,7 +64,7 @@ https://example.com/...?tracking=xyz → SHA256/MD5 → base62(hash) → "a1B2cD
 
 There are multiple approaches to generate short codes:
 
-##### A) **Hash-Based Approach** (Current Planned Implementation)
+##### A) **Hash-Based Approach**
 
 ```
 Algorithm:
@@ -80,7 +83,7 @@ Cons:
 - Cannot track creation stats easily
 ```
 
-##### B) **Sequential ID Approach** (Most Common)
+##### B) **Sequential ID Approach** (Most Common)(Current Planned Implementation)
 
 ```
 Algorithm:
@@ -322,6 +325,8 @@ The application follows a client-side form validation pattern:
 | Form Management | React Hook Form | 7.71.2  | Efficient form state management            |
 | Validation      | Zod             | 4.3.6   | Schema validation library                  |
 | Styling         | Tailwind CSS    | 4.x     | Utility-first CSS framework                |
+| Database ORM    | Prisma          | 6.x     | Type-safe database client & migrations     |
+| Database        | PostgreSQL      | 14+     | Relational database for URL mappings       |
 | Linting         | ESLint          | 9.x     | Code quality assurance                     |
 
 ### Why These Technologies?
@@ -331,6 +336,8 @@ The application follows a client-side form validation pattern:
 - **Zod**: Runtime schema validation with type inference
 - **Tailwind CSS**: Fast styling without writing CSS, built-in dark mode
 - **TypeScript**: Prevents runtime errors with static type checking
+- **Prisma**: Type-safe database access, migrations, and introspection
+- **PostgreSQL**: Robust relational database with excellent query performance
 
 ---
 
@@ -465,7 +472,7 @@ The UI features:
 
 ---
 
-## API Design (Planned)
+## API Design
 
 ### Endpoint: POST `/api/shorten`
 
@@ -481,10 +488,12 @@ The UI features:
 
 ```json
 {
-  "short_code": "aBc123",
-  "short_url": "https://pocket-link/aBc123",
+  "id": 1,
+  "short_code": "1",
   "long_url": "https://example.com/very/long/url/path",
-  "created_at": "2026-02-27T10:30:00Z"
+  "short_url": "https://pocket-link/1",
+  "created_at": "2026-02-27T10:30:00Z",
+  "is_active": true
 }
 ```
 
@@ -497,63 +506,112 @@ The UI features:
 }
 ```
 
+**Implementation with Prisma:**
+
+```typescript
+import prisma from '../../../../lib/prisma';
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { url } = body;
+
+    // Create new URL record in database
+    const newUrl = await prisma.urls.create({
+      data: {
+        long_url: url,
+        short_code: generateShortCode(), // Implement base62 encoding
+        is_active: true,
+      },
+    });
+
+    return new Response(JSON.stringify(newUrl), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid URL format', code: 'INVALID_URL' }),
+      { status: 400 },
+    );
+  }
+}
+```
+
 ### Endpoint: GET `/[shortCode]`
 
 **Behavior:**
 
-- Looks up short code in database
-- Records analytics (timestamp, referrer, user agent)
+- Looks up short code in Prisma database
+- Validates URL is active and not expired
 - Returns HTTP 301 Moved Permanently with Location header
 - Client is redirected to original URL
 
 **Example:**
 
 ```
-Client Request: GET /aBc123
+Client Request: GET /1
 Server Response: 301 Location: https://example.com/very/long/url/path
 ```
 
 ---
 
-## Database Schema (Planned)
+## Database Schema
 
-### URLs Table
+### Prisma Schema (prisma/schema.prisma)
 
-```sql
-CREATE TABLE urls (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  short_code VARCHAR(10) UNIQUE NOT NULL,
-  long_url TEXT NOT NULL,
-  user_id VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  expires_at TIMESTAMP,
-  is_active BOOLEAN DEFAULT TRUE,
-  click_count INT DEFAULT 0,
-  last_accessed_at TIMESTAMP,
+```prisma
+model Urls {
+  id        BigInt     @id @default(autoincrement())
+  short_code String    @unique
+  long_url  String
+  created_at DateTime  @default(now())
+  expires_at DateTime?
+  is_active Boolean   @default(true)
 
-  INDEX idx_short_code (short_code),
-  INDEX idx_user_id (user_id),
-  INDEX idx_created_at (created_at)
-);
+  @@index([short_code], name: "idx_short_code")
+  @@index([created_at], name: "idx_created_at")
+}
 ```
 
-### Analytics Table (Optional)
+### Key Features
 
-```sql
-CREATE TABLE analytics (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  short_code_id BIGINT NOT NULL,
-  referrer VARCHAR(512),
-  user_agent TEXT,
-  ip_address VARCHAR(45),
-  accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  country VARCHAR(2),
+- **Auto-incrementing ID**: For sequential short code generation
+- **Unique short_code**: Ensures no duplicate mappings
+- **Expiration Support**: Optional `expires_at` field for link expiration
+- **is_active Flag**: Soft delete capability
+- **Indexed Fields**: Fast lookup by short_code and creation date
 
-  FOREIGN KEY (short_code_id) REFERENCES urls(id),
-  INDEX idx_short_code_id (short_code_id),
-  INDEX idx_accessed_at (accessed_at)
-);
+### Getting Started with Prisma
+
+```bash
+# Install dependencies
+pnpm install @prisma/client
+
+# Initialize Prisma (if not already done)
+npx prisma init
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# Open Prisma Studio to view data
+npx prisma studio
 ```
+
+id BIGINT PRIMARY KEY AUTO_INCREMENT,
+short_code_id BIGINT NOT NULL,
+referrer VARCHAR(512),
+user_agent TEXT,
+ip_address VARCHAR(45),
+accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+country VARCHAR(2),
+
+FOREIGN KEY (short_code_id) REFERENCES urls(id),
+INDEX idx_short_code_id (short_code_id),
+INDEX idx_accessed_at (accessed_at)
+);
+
+````
 
 ---
 
@@ -578,7 +636,7 @@ CREATE TABLE analytics (
 
 ```bash
 pnpm test
-```
+````
 
 ### Linting
 

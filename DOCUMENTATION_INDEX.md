@@ -5,9 +5,11 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
 ## 📚 Documentation Files
 
 ### 1. **README.md** - Project Overview & URL Shortening Logic
+
 **For:** Everyone (developers, stakeholders, new team members)
 
 **Contains:**
+
 - Project concept and vision
 - **Understanding URL Shortening Logic** (IN-DEPTH)
   - What is URL shortening
@@ -19,22 +21,31 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
   - Redirect logic
   - Data persistence
   - URL shortening workflow diagram
-- Tech stack overview
-- Project structure
+- Tech stack overview (including Prisma & PostgreSQL)
+- Database schema with Prisma
+- API endpoints with implementation
 - Installation instructions
-- How it currently works
+- Full-stack feature set
 
 **When to read:** First resource when onboarding or understanding project goals
 
 ---
 
 ### 2. **TECHNICAL_GUIDE.md** - Implementation Details & Code Examples
+
 **For:** Backend developers, system architects, code implementers
 
 **Contains:**
+
+- **Prisma Integration** (NEW)
+  - Database schema design
+  - Prisma client singleton pattern
+  - Type-safe API routes
+  - Migration workflow
+  - Prisma commands reference
 - Short code generation algorithms (detailed)
   - Hash-based (deterministic)
-  - Sequential ID (production-ready)
+  - Sequential ID (production-ready with Prisma)
   - Random string (privacy-focused)
 - Hash function comparisons
   - SHA-256
@@ -43,7 +54,7 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
 - Database optimization strategies
 - Collision handling strategies
 - Complete service class implementation
-- Next.js API route integration
+- Next.js API route integration with Prisma
 - Performance benchmarking
 - Security considerations
 
@@ -52,16 +63,19 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
 ---
 
 ### 3. **ARCHITECTURE.md** - System Design & Deployment
+
 **For:** Architects, DevOps engineers, full-stack developers
 
 **Contains:**
-- High-level system architecture
+
+- High-level system architecture with Prisma ORM layer
+- Layered architecture (Presentation → API → Business Logic → Prisma → Database)
 - Component diagram (microservices)
 - Data flow diagrams
   - URL shortening flow
   - URL resolution flow
 - Deployment architecture
-  - Development setup
+  - Development setup with PostgreSQL & Prisma
   - Production multi-tier
   - Container/Kubernetes deployment
 - Scalability strategy
@@ -69,20 +83,27 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
 - Caching strategies
 - Complete API specifications
 - Response codes and error handling
+- Prisma-specific optimizations
 
 **When to read:** When designing the infrastructure or planning deployments
 
 ---
 
 ### 4. **QUICKSTART.md** - Development Quick Start
+
 **For:** Developers, contributors, local environment setup
 
 **Contains:**
-- Environment setup guide
-- Project structure explanation
+
+- Environment setup guide (Node, pnpm, PostgreSQL)
+- **Prisma database setup** (NEW)
+  - PostgreSQL installation
+  - Migration workflow
+  - Prisma Studio setup
+- Project structure explanation (including prisma/ folder)
 - Running locally (dev/production modes)
 - Code examples
-  - Creating API routes
+  - Creating API routes with Prisma
   - Creating services
   - Creating React components
   - Writing tests
@@ -90,8 +111,8 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
   - Custom short codes
   - QR code generation
   - Expiring links
-- Troubleshooting common issues
-- Dependencies overview
+- Troubleshooting common issues (including DB connection)
+- Dependencies overview (Prisma, PostgreSQL, etc.)
 
 **When to read:** First time setting up local environment or adding a feature
 
@@ -101,58 +122,75 @@ Complete guide to Pocket Link documentation. Choose the right resource based on 
 
 ### You want to...
 
-| Task | Read |
-|------|------|
-| Understand what URL shortening is | README.md → "Understanding URL Shortening Logic" |
-| Understand the project concept | README.md → "Project Overview" |
-| Set up local development | QUICKSTART.md → "Running Locally" |
-| Implement backend API | TECHNICAL_GUIDE.md → "Code Examples" |
-| Optimize database queries | TECHNICAL_GUIDE.md → "Database Optimization" |
-| Design system architecture | ARCHITECTURE.md → "System Architecture" |
-| Deploy to production | ARCHITECTURE.md → "Deployment Architecture" |
-| Handle API requests/responses | ARCHITECTURE.md → "API Specifications" |
-| Scale to millions of URLs | ARCHITECTURE.md → "Scalability Strategy" |
-| Troubleshoot an issue | QUICKSTART.md → "Troubleshooting" |
-| Add a new feature | QUICKSTART.md → "Adding Features" |
-| Generate short codes correctly | TECHNICAL_GUIDE.md → "Short Code Generation Algorithms" |
-| Implement caching | ARCHITECTURE.md → "Caching Strategy" |
+| Task                                 | Read                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------- |
+| Understand what URL shortening is    | README.md → "Understanding URL Shortening Logic"                           |
+| Understand the project concept       | README.md → "Project Overview"                                             |
+| Set up PostgreSQL & Prisma           | QUICKSTART.md → "Database Setup"                                           |
+| Set up local development environment | QUICKSTART.md → "Environment Setup"                                        |
+| Implement backend API with Prisma    | TECHNICAL_GUIDE.md → "Prisma Integration"                                  |
+| Use Prisma for database queries      | TECHNICAL_GUIDE.md → "Prisma Integration" → "API Route Implementation"     |
+| Understand database schema           | README.md → "Database Schema" or TECHNICAL_GUIDE.md → "Prisma Integration" |
+| Optimize database queries            | TECHNICAL_GUIDE.md → "Database Optimization"                               |
+| Design system architecture           | ARCHITECTURE.md → "System Architecture"                                    |
+| See Prisma in the architecture       | ARCHITECTURE.md → "Layered Architecture"                                   |
+| Deploy to production                 | ARCHITECTURE.md → "Deployment Architecture"                                |
+| Handle API requests/responses        | ARCHITECTURE.md → "API Specifications"                                     |
+| Scale to millions of URLs            | ARCHITECTURE.md → "Scalability Strategy"                                   |
+| Troubleshoot an issue                | QUICKSTART.md → "Troubleshooting"                                          |
+| Add a new feature                    | QUICKSTART.md → "Adding Features"                                          |
+| Generate short codes correctly       | TECHNICAL_GUIDE.md → "Short Code Generation Algorithms"                    |
+| Implement caching                    | ARCHITECTURE.md → "Caching Strategy"                                       |
+| View/manage database data            | QUICKSTART.md → "Database Setup" (Prisma Studio)                           |
 
 ---
 
 ## 📖 Reading Paths by Role
 
 ### Backend Developer
-1. QUICKSTART.md (Overall setup)
-2. TECHNICAL_GUIDE.md (Implementation details)
-3. ARCHITECTURE.md (API specs & database design)
-4. README.md (Reference on URL shortening concepts)
+
+1. QUICKSTART.md → "Database Setup" (Set up PostgreSQL & Prisma)
+2. QUICKSTART.md (Overall environment setup)
+3. TECHNICAL_GUIDE.md → "Prisma Integration" (Implementation with Prisma)
+4. TECHNICAL_GUIDE.md (Other implementation details)
+5. ARCHITECTURE.md (API specs & database design)
+6. README.md (Reference on URL shortening concepts)
 
 ### Frontend Developer
-1. QUICKSTART.md (Project setup)
+
+1. QUICKSTART.md (Project & environment setup)
 2. README.md (Understand feature requirements)
 3. QUICKSTART.md → "Code Examples" (Component patterns)
 
 ### DevOps / Infrastructure Engineer
+
 1. ARCHITECTURE.md (Complete system design)
-2. TECHNICAL_GUIDE.md → "Performance Considerations" (Optimization)
-3. QUICKSTART.md (Local development for testing)
+2. QUICKSTART.md → "Database Setup" (PostgreSQL & Prisma setup)
+3. TECHNICAL_GUIDE.md → "Performance Considerations" (Optimization)
+4. QUICKSTART.md (Local development for testing)
 
 ### Product Manager / Stakeholder
+
 1. README.md → "Project Overview"
 2. README.md → "Understanding URL Shortening Logic"
 3. ARCHITECTURE.md → "API Specifications" (Feature capabilities)
 
 ### Tech Lead / Architect
+
 1. README.md (Overview)
-2. ARCHITECTURE.md (Complete system design)
-3. TECHNICAL_GUIDE.md (Implementation details)
-4. QUICKSTART.md (Setup validation)
+2. ARCHITECTURE.md (Complete system design with Prisma)
+3. TECHNICAL_GUIDE.md → "Prisma Integration" (Implementation approach)
+4. TECHNICAL_GUIDE.md (Other implementation details)
+5. QUICKSTART.md (Setup validation)
 
 ### New Team Member
+
 1. README.md (Start here)
-2. QUICKSTART.md (Set up environment)
-3. TECHNICAL_GUIDE.md (Deep dive into code)
-4. ARCHITECTURE.md (Understand system design)
+2. QUICKSTART.md → "Database Setup" (Set up PostgreSQL & Prisma)
+3. QUICKSTART.md (Set up complete environment)
+4. TECHNICAL_GUIDE.md → "Prisma Integration" (Deep dive into Prisma code)
+5. TECHNICAL_GUIDE.md (Other technical details)
+6. ARCHITECTURE.md (Understand system design)
 
 ---
 
@@ -201,12 +239,12 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 
 ## 📊 Documentation Statistics
 
-| Document | Length | Focus | Audience |
-|----------|--------|-------|----------|
-| README.md | ~800 lines | Overview + URL shortening logic | Everyone |
-| TECHNICAL_GUIDE.md | ~900 lines | Algorithms + implementation | Developers |
-| ARCHITECTURE.md | ~700 lines | System design + deployment | Architects |
-| QUICKSTART.md | ~600 lines | Setup + features | Developers |
+| Document           | Length     | Focus                           | Audience   |
+| ------------------ | ---------- | ------------------------------- | ---------- |
+| README.md          | ~800 lines | Overview + URL shortening logic | Everyone   |
+| TECHNICAL_GUIDE.md | ~900 lines | Algorithms + implementation     | Developers |
+| ARCHITECTURE.md    | ~700 lines | System design + deployment      | Architects |
+| QUICKSTART.md      | ~600 lines | Setup + features                | Developers |
 
 **Total: ~2,600 lines of comprehensive documentation**
 
@@ -216,13 +254,13 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 
 ### Documentation Questions
 
-| Issue | Solution |
-|-------|----------|
-| Can't find information about X | Use browser's find (Ctrl+F) within documents |
-| Want to understand URL shortening | Start with README.md section |
-| Need implementation examples | See QUICKSTART.md or TECHNICAL_GUIDE.md |
-| Stuck on setup | Check QUICKSTART.md → "Troubleshooting" |
-| Need system design details | Read ARCHITECTURE.md |
+| Issue                             | Solution                                     |
+| --------------------------------- | -------------------------------------------- |
+| Can't find information about X    | Use browser's find (Ctrl+F) within documents |
+| Want to understand URL shortening | Start with README.md section                 |
+| Need implementation examples      | See QUICKSTART.md or TECHNICAL_GUIDE.md      |
+| Stuck on setup                    | Check QUICKSTART.md → "Troubleshooting"      |
+| Need system design details        | Read ARCHITECTURE.md                         |
 
 ### Code Questions
 
@@ -245,29 +283,34 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 ## 📚 Learning Path (Recommended)
 
 ### Week 1: Understanding
+
 - [ ] Read README.md (complete overview)
 - [ ] Focus on "Understanding URL Shortening Logic" section
 - [ ] Understand the three approaches to short code generation
 
 ### Week 2: Development Environment
+
 - [ ] Follow QUICKSTART.md setup
 - [ ] Get the project running locally (`pnpm dev`)
 - [ ] Test the URL input form
 - [ ] Review code structure
 
 ### Week 3: Implementation
+
 - [ ] Study TECHNICAL_GUIDE.md algorithms
 - [ ] Review code examples in QUICKSTART.md
 - [ ] Implement API routes (POST /api/shorten)
 - [ ] Connect to test database
 
 ### Week 4: Architecture & Scaling
+
 - [ ] Read ARCHITECTURE.md
 - [ ] Understand API specifications
 - [ ] Plan database schema
 - [ ] Design caching strategy
 
 ### Week 5: Optimization & Deployment
+
 - [ ] Study performance considerations
 - [ ] Implement caching layer
 - [ ] Plan deployment strategy
@@ -278,27 +321,32 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 ## 🔗 Cross-References
 
 ### URL Shortening Logic
+
 - **Explained in:** README.md
 - **Implemented in:** TECHNICAL_GUIDE.md
 - **Deployed via:** ARCHITECTURE.md
 - **Setup for:** QUICKSTART.md
 
 ### API Endpoints
+
 - **Conceptual:** README.md → "API Design (Planned)"
 - **Detailed:** ARCHITECTURE.md → "API Specifications"
 - **Code:** QUICKSTART.md → "Code Examples"
 
 ### Database Design
+
 - **Schema:** ARCHITECTURE.md → "Database Schema (Planned)"
 - **Optimization:** TECHNICAL_GUIDE.md → "Database Optimization"
 - **Queries:** QUICKSTART.md → "Code Examples"
 
 ### Scalability
+
 - **Strategy:** ARCHITECTURE.md → "Scalability Strategy"
 - **Performance:** TECHNICAL_GUIDE.md → "Performance Considerations"
 - **Sharding:** ARCHITECTURE.md → "Database Sharding"
 
 ### Caching
+
 - **Strategy:** ARCHITECTURE.md → "Caching Strategy"
 - **Implementation:** QUICKSTART.md → "Code Examples"
 - **Redis config:** ARCHITECTURE.md → "Multi-Level Cache"
@@ -308,6 +356,7 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 ## ✅ Documentation Completeness
 
 ### Covered Topics ✅
+
 - ✅ Project vision and overview
 - ✅ URL shortening concepts and logic
 - ✅ Three generation algorithms with pros/cons
@@ -329,6 +378,7 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 - ✅ Troubleshooting guide
 
 ### Planned Additions 🔜
+
 - [ ] API SDK documentation
 - [ ] Client library examples
 - [ ] Admin dashboard design
@@ -342,6 +392,7 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 ## 🎓 Learning Resources
 
 ### Internal Documentation
+
 - README.md → Project overview
 - TECHNICAL_GUIDE.md → Deep technical details
 - ARCHITECTURE.md → System design
@@ -350,22 +401,27 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 ### External Resources
 
 **URL Shortening Concepts:**
+
 - [URL Shortening Services Guide](https://en.wikipedia.org/wiki/URL_shortening)
 - [Base62 Encoding](https://en.wikipedia.org/wiki/Base62)
 
 **Next.js Development:**
+
 - [Next.js Official Docs](https://nextjs.org/docs)
 - [Next.js App Router](https://nextjs.org/docs/app)
 
 **Form & Validation:**
+
 - [React Hook Form](https://react-hook-form.com/)
 - [Zod Documentation](https://zod.dev/)
 
 **Database Design:**
+
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Database Indexing Guide](https://use-the-index-luke.com/)
 
 **System Design:**
+
 - [System Design Interview](https://interviewing.io/)
 - [Designing Data-Intensive Applications](https://dataintensive.net/)
 
@@ -373,8 +429,8 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 
 ## 📝 Version History
 
-| Date | Author | Changes |
-|------|--------|---------|
+| Date       | Author             | Changes                       |
+| ---------- | ------------------ | ----------------------------- |
 | 2026-02-27 | Documentation Team | Initial documentation release |
 
 ---
@@ -389,7 +445,7 @@ Converts numbers to 62-character alphabet (0-9, a-z, A-Z) for compact representa
 
 ---
 
-**Note:** This documentation is living and will be updated as the project evolves. 
+**Note:** This documentation is living and will be updated as the project evolves.
 Check the `Last Updated` date at the bottom of each document for the most recent version.
 
 ---

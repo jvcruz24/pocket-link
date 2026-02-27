@@ -85,33 +85,36 @@ Comprehensive architecture documentation for Pocket Link URL shortening service.
 ┌────────────────────────────────────────────────────────────┐
 │           API Layer (Next.js API Routes)                   │
 │  - POST /api/shorten                                       │
-│  - GET /api/[shortCode]                                    │
-│  - Middleware (Auth, Rate Limiting)                        │
+│  - GET /[shortCode]                                        │
+│  - HTTP middleware (Auth, Rate Limiting)                   │
+│  - Prisma client integration                               │
 └────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌────────────────────────────────────────────────────────────┐
 │          Business Logic Layer (Services)                   │
-│  - URL validation                                          │
-│  - Short code generation                                   │
+│  - URL validation (Zod)                                    │
+│  - Short code generation (Sequential ID / Base62)          │
 │  - Collision detection                                     │
-│  - Analytics aggregation                                   │
+│  - URL expiration logic                                    │
 └────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌────────────────────────────────────────────────────────────┐
-│             Data Access Layer (Repositories)               │
-│  - Database queries                                        │
-│  - Cache management                                        │
-│  - Data mapping                                            │
+│       Data Access Layer (Prisma ORM)                       │
+│  - Type-safe database queries                              │
+│  - Automatic query optimization                            │
+│  - Migration management                                    │
+│  - Connection pooling                                      │
 └────────────────────────────────────────────────────────────┘
                            │
                            ▼
 ┌────────────────────────────────────────────────────────────┐
-│           Data Layer (Database & Cache)                    │
-│  - PostgreSQL/MySQL                                        │
-│  - Redis                                                   │
-│  - Object Storage (S3)                                     │
+│      Data Layer (PostgreSQL)                               │
+│  - urls table with indexed short_code                      │
+│  - Automatic timestamps (created_at)                       │
+│  - Soft delete with is_active flag                         │
+│  - Expiration support with expires_at                      │
 └────────────────────────────────────────────────────────────┘
 ```
 
