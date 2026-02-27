@@ -1,16 +1,10 @@
 import prisma from '@/lib/prisma';
-import { url } from 'node:inspector';
 import z from 'zod';
+import { bigintToSafe, generateShortCodeRandom } from '@/lib/short-url';
 
 const urlSchema = z.object({
   url: z.url('Invalid URL format'),
 });
-
-function bigintToSafe(obj: any) {
-  return JSON.parse(
-    JSON.stringify(obj, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)),
-  );
-}
 
 export async function POST(request: Request) {
   try {
@@ -29,10 +23,13 @@ export async function POST(request: Request) {
       });
     }
 
+    // create a unique short code using a privacy‑focused random algorithm
+    const shortCode = await generateShortCodeRandom();
+
     const newUrl = await prisma.urls.create({
       data: {
         long_url: url,
-        short_code: (await prisma.urls.count()).toString(),
+        short_code: shortCode,
       },
     });
 
@@ -40,21 +37,21 @@ export async function POST(request: Request) {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Invalid Request' }), {
       status: 400,
     });
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const urls = await prisma.urls.findMany();
     return new Response(JSON.stringify(bigintToSafe(urls)), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: 'Server Error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
