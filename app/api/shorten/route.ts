@@ -1,10 +1,7 @@
 import prisma from '@/lib/prisma';
 import z from 'zod';
 import { bigintToSafe, generateShortCodeRandom } from '@/lib/short-url';
-
-const urlSchema = z.object({
-  url: z.url('Invalid URL format'),
-});
+import { urlSchema } from '@/lib/schema';
 
 export async function POST(request: Request) {
   try {

@@ -4,16 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-
-const urlSchema = z.object({
-  url: z.url('Please enter a valid URL'),
-});
+import { urlSchema } from '@/lib/schema';
 
 type UrlFormData = z.infer<typeof urlSchema>;
 
 export default function Home() {
   const [shortLink, setShortLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const {
     register,
@@ -42,8 +40,8 @@ export default function Home() {
       setShortLink(`${process.env.NEXT_PUBLIC_SITE_URL}/${result.short_code}`);
 
       console.log(result);
-    } catch (error: unknown) {
-      throw new Error(`Failed to shorten link', error ${error}`);
+    } catch {
+      setFormError('Something went wrong. Please try again.');
     }
   };
 
@@ -79,6 +77,7 @@ export default function Home() {
           </button>
         </form>
         {errors.url && <p className='text-red-500'>{errors.url.message}</p>}
+        {formError && <p className='text-red-500'>{formError}</p>}
         {shortLink && (
           <div className='mt-6 p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg w-full'>
             <p className='text-sm text-zinc-500 mb-1'>Shortened URL:</p>
