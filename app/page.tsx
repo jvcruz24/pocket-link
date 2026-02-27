@@ -1,17 +1,17 @@
 'use client';
-import { z } from 'zod';
+import Image from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { urlSchema } from '@/lib/schema';
-
-type UrlFormData = z.infer<typeof urlSchema>;
+import { urlSchema, UrlFormData } from '@/lib/schema';
+import { generateQRCode } from '@/lib/qr';
 
 export default function Home() {
   const [shortLink, setShortLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -57,6 +57,11 @@ export default function Home() {
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
+  };
+
+  const handleGenerateQR = async (url: string) => {
+    const dataUrl = await generateQRCode(url);
+    setQrUrl(dataUrl);
   };
 
   return (
@@ -109,6 +114,35 @@ export default function Home() {
                   />
                 )}
               </button>
+            </div>
+            {/* The QR Image */}
+            {qrUrl && (
+              <Image
+                width={300}
+                height={100}
+                src={qrUrl}
+                alt='QR Code'
+                className='w-40 h-40 shadow-md'
+              />
+            )}
+
+            <div className='flex gap-2'>
+              <button
+                onClick={() => handleGenerateQR(shortLink)}
+                className='bg-gray-200 px-4 py-2 rounded'
+              >
+                Generate QR
+              </button>
+
+              {qrUrl && (
+                <a
+                  href={qrUrl}
+                  download='pocket-link-qr.png'
+                  className='bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700'
+                >
+                  Download QR
+                </a>
+              )}
             </div>
           </div>
         )}
